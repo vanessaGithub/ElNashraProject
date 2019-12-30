@@ -92,6 +92,17 @@ class _NewsDetailsState extends State<NewsDetails> {
               children: <Widget>[
                 Column(
                   children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Text(
+                        newsData['title'],
+                        textDirection: TextDirection.rtl,
+                        style: GoogleFonts.cairo(
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                     Stack(children: <Widget>[
                       Container(
                         child: Padding(

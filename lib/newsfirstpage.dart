@@ -19,6 +19,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<News> newsAll = new List();
 
+
 //  List allTitles = [
 //    "أنور قرقاش: قوة الرياض والقاهرة ضرورية لكل العرب",
 //    "التحكم المروري: جريح نتيجة تصادم مركبة بدراجة نارية بمحلة الاوزاعي",
@@ -28,51 +29,34 @@ class _MyHomePageState extends State<MyHomePage> {
   List allTitles = [];
   List allImages = [];
   List allContents = [];
+  static String elnashraStr = 'ElNashra';
 
   List<News> newsList = [];
   News newsObj;
   String newsTitle = "", newsImage = "", newsContent = "", newsDate = "";
 
+  Icon searchIcon = Icon(Icons.search);
+
+  Icon searchIconMutate = Icon(Icons.search);
+
+  Widget searchTxt = Text(
+    elnashraStr,
+  style: TextStyle(
+    color: Colors.blueAccent,
+  ),
+  );
+
+  Widget searchTxtMutate;
+
   @override
   void initState() {
     super.initState();
-    fetchCoins();
+    getNews();
   }
 
-  Future<void> fetchCoins() async {
-    var url =
-        'https://raw.githubusercontent.com/vanessaGithub/elnashraflutter/master/elnashranews.json';
-    var response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      List newsJson = json.decode(response.body);
 
-      if(newsJson!=null) {
-        for (int i = 0; i < newsJson.length; i++) {
-          newsTitle = newsJson[i]['title'];
-          newsImage = newsJson[i]['image'];
-          newsContent = newsJson[i]['content'];
-          newsDate = newsJson[i]['date'];
 
-        newsObj = News(newsTitle: newsTitle, newsImage: newsImage, newsDesc: newsContent, newsDate: newsDate);
-
-          allTitles.add(newsJson[i]['title']);
-          allImages.add(newsJson[i]['image']);
-          allContents.add(newsJson[i]['content']);
-
-          newsList.add(newsObj);
-        }
-      }
-
-      setState(() {});
-
-      print('map json' + newsJson.toString());
-    }
-  }
-
-  void toggleDrawer(){
-
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,20 +81,41 @@ class _MyHomePageState extends State<MyHomePage> {
 //                  // do something
 //                  toggleDrawer();
 //                },
-//              )
-            ],
-            title: Text(
+//              ),
 
-              'ElNashra',
-              textDirection: TextDirection.rtl,
-              style: GoogleFonts.montserrat(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                textStyle: TextStyle(
-                  color: Colors.blueAccent,
-                ),
-              ),
+            ],
+
+            leading:
+            IconButton(
+              icon:
+              searchIcon,
+              onPressed: (){
+                setState(() {
+                  if(this.searchIcon.icon == Icons.search){
+                    this.searchIcon = Icon(Icons.cancel);
+                    this.searchTxt = TextField(
+                      textInputAction: TextInputAction.go,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Enter Some Text Here'),
+                      style: TextStyle(
+                        fontSize: 15,
+                      ),
+                    );
+                  } else {
+                    this.searchIcon = Icon(Icons.search);
+                    this.searchTxt = Text(
+                      elnashraStr,
+                      style: TextStyle(
+                        color: Colors.blueAccent,
+                      ),
+                    );;
+                  }
+                });
+              },
             ),
+
+            title: searchTxt,
             backgroundColor: Colors.grey[100],
           ),
 
@@ -189,19 +194,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
                 SizedBox(height: 20),
-                SearchWidget(
-                  dataList: newsList,
-                  hideSearchBoxWhenItemSelected: false,
-                  listContainerHeight: MediaQuery.of(context).size.height/4,
-                  queryBuilder: (query, newsList) {
-                    return newsList
-                        .where((item) => item.username
-                    .toLoweCase()
-                    .contains(query.toLowerCase()))
-                        .toList();
-                  },
-
-                ),
+//                SearchWidget(
+//                  dataList: newsList,
+//                  hideSearchBoxWhenItemSelected: false,
+//                  listContainerHeight: MediaQuery.of(context).size.height/4,
+//                  queryBuilder: (query, newsList) {
+//                    return newsList
+//                        .where((item) => item.username
+//                    .toLoweCase()
+//                    .contains(query.toLowerCase()))
+//                        .toList();
+//                  },
+//
+//                ),
                 ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
@@ -278,4 +283,38 @@ class _MyHomePageState extends State<MyHomePage> {
         ) // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+
+
+
+  Future<void> getNews() async {
+    var url =
+        'https://raw.githubusercontent.com/vanessaGithub/elnashraflutter/master/elnashranews.json';
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      List newsJson = json.decode(response.body);
+
+      if(newsJson!=null) {
+        for (int i = 0; i < newsJson.length; i++) {
+          newsTitle = newsJson[i]['title'];
+          newsImage = newsJson[i]['image'];
+          newsContent = newsJson[i]['content'];
+          newsDate = newsJson[i]['date'];
+
+          newsObj = News(newsTitle: newsTitle, newsImage: newsImage, newsDesc: newsContent, newsDate: newsDate);
+
+          allTitles.add(newsJson[i]['title']);
+          allImages.add(newsJson[i]['image']);
+          allContents.add(newsJson[i]['content']);
+
+          newsList.add(newsObj);
+        }
+      }
+
+      setState(() {});
+
+      print('map json' + newsJson.toString());
+    }
+  }
+
 }
