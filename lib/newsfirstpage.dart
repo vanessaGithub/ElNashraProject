@@ -1,8 +1,10 @@
+import 'package:elnashra_flutter_project/MyAppBar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'news.dart';
 import 'dart:convert';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:search_widget/search_widget.dart';
 
@@ -32,6 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static String elnashraStr = 'ElNashra';
 
   List<News> newsList = [];
+  List<News> filteredNewsList = List();
   News newsObj;
   String newsTitle = "", newsImage = "", newsContent = "", newsDate = "";
 
@@ -68,6 +71,10 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return SafeArea(
         child: Scaffold(
+//          appBar: MyAppBar(
+//              title:'ElNashra'
+//          ),
+////
           appBar: AppBar(
             iconTheme: new IconThemeData(color: Colors.blueAccent),
             centerTitle: true,
@@ -94,6 +101,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   if(this.searchIcon.icon == Icons.search){
                     this.searchIcon = Icon(Icons.cancel);
                     this.searchTxt = TextField(
+                      autofocus: true,
                       textInputAction: TextInputAction.go,
                       decoration: InputDecoration(
                           border: InputBorder.none,
@@ -101,8 +109,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       style: TextStyle(
                         fontSize: 15,
                       ),
+                      onChanged: (string) {
+                        setState(() {
+                          filteredNewsList = newsList.where( (u) =>
+                          (u.newsTitle.toLowerCase().contains(string.toLowerCase()) ||
+                              u.newsDesc.toLowerCase().contains(string.toLowerCase()) ||
+                              u.newsDate.toLowerCase().contains(string.toLowerCase())))
+                              .toList();
+                        });
+                      },
                     );
                   } else {
+                    setState(() {filteredNewsList = newsList;});
                     this.searchIcon = Icon(Icons.search);
                     this.searchTxt = Text(
                       elnashraStr,
@@ -210,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  itemCount: newsList.length,
+                  itemCount: filteredNewsList.length,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.fromLTRB(10,0,10,0),
@@ -236,7 +254,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: <Widget>[
                                       Text(
-                                          newsList[index].newsTitle,
+                                          filteredNewsList[index].newsTitle,
                                           textDirection: TextDirection.rtl,
                                           style: TextStyle(
                                             decoration: TextDecoration.none,
@@ -245,7 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                       SizedBox(height: 10,),
                                       Text(
-                                          newsList[index].newsDate,
+                                          filteredNewsList[index].newsDate,
                                           textDirection: TextDirection.rtl,
                                           style: TextStyle(
                                             decoration: TextDecoration.none,
@@ -311,7 +329,9 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
 
-      setState(() {});
+      setState(() {
+        filteredNewsList = newsList;
+      });
 
       print('map json' + newsJson.toString());
     }

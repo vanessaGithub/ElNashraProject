@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'MyAppBar.dart';
+
 class NewsDetails extends StatefulWidget {
   @override
   _NewsDetailsState createState() => _NewsDetailsState();
@@ -25,7 +27,13 @@ class _NewsDetailsState extends State<NewsDetails> {
 
     return SafeArea(
         child: Scaffold(
-          appBar: AppBar(
+          appBar:
+
+//          MyAppBar(
+//              title: "ElNashra"
+//          ),
+
+          AppBar(
             iconTheme: new IconThemeData(color: Colors.blueAccent),
             centerTitle: true,
             actions: <Widget>[
@@ -43,12 +51,9 @@ class _NewsDetailsState extends State<NewsDetails> {
 
               'ElNashra',
               textDirection: TextDirection.rtl,
-              style: GoogleFonts.montserrat(
+              style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
-                textStyle: TextStyle(
-                  color: Colors.blueAccent,
-                ),
+               color: Colors.blueAccent
               ),
             ),
             backgroundColor: Colors.grey[100],
