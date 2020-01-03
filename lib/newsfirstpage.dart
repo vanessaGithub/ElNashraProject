@@ -1,10 +1,12 @@
 import 'package:elnashra_flutter_project/MyAppBar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:http/http.dart' as http;
 import 'news.dart';
 import 'dart:convert';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'dart:async';
+import 'package:share/share.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:search_widget/search_widget.dart';
 
@@ -37,6 +39,8 @@ class _MyHomePageState extends State<MyHomePage> {
   List<News> filteredNewsList = List();
   News newsObj;
   String newsTitle = "", newsImage = "", newsContent = "", newsDate = "";
+
+  GlobalKey<RefreshIndicatorState> refreshKey;
 
   Icon searchIcon = Icon(Icons.search);
 
@@ -169,49 +173,53 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-          body: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              children: <Widget>[
-                Column(
+
+          body:  RefreshIndicator(
+            key: refreshKey,
+            onRefresh: getNews,
+            child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
                   children: <Widget>[
-                    Stack(children: <Widget>[
-                      Container(
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Container(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10.0),
-                              child: Image(
-                                height: 200,
-                                fit: BoxFit.cover,
-                                image: NetworkImage(
-                                    'https://files.elnashra.com/elnashra/imagine/pictures_730_400/4761937_1576596487.jpg'),
+                    Column(
+                      children: <Widget>[
+                        Stack(children: <Widget>[
+                          Container(
+                            child: Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: Container(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  child: Image(
+                                    height: 200,
+                                    fit: BoxFit.cover,
+                                    image: NetworkImage(
+                                        'https://files.elnashra.com/elnashra/imagine/pictures_730_400/4761937_1576596487.jpg'),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        left: 0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Text(
-                            " تُسمّينه يسوع(لو1: 31) ",
-                            textDirection: TextDirection.rtl,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 20),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            left: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(
+                                " تُسمّينه يسوع(لو1: 31) ",
+                                textDirection: TextDirection.rtl,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 20),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ])
-                  ],
-                ),
-                SizedBox(height: 20),
+                        ])
+                      ],
+                    ),
+                    SizedBox(height: 20),
 //                SearchWidget(
 //                  dataList: newsList,
 //                  hideSearchBoxWhenItemSelected: false,
@@ -225,86 +233,119 @@ class _MyHomePageState extends State<MyHomePage> {
 //                  },
 //
 //                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: filteredNewsList.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.fromLTRB(10,0,10,0),
-                      child: GestureDetector(
-                        onTap: (){
-                          Navigator.pushNamed(context, '/newsdetails', arguments: {
-                            'image' : newsList[index].newsImage,
-                            'title' : newsList[index].newsTitle,
-                            'details': newsList[index].newsDesc,
-                            'date' : newsList[index].newsDate,
-                          });
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadiusDirectional.circular(3)),
-                          child: Padding(
-                            padding: EdgeInsets.fromLTRB(10, 5, 5, 10),
-                            child: Row(
-                              children: <Widget>[
-                                Expanded(
-                                  flex: 3,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: <Widget>[
-                                      Text(
-                                          filteredNewsList[index].newsTitle,
-                                          textDirection: TextDirection.rtl,
-                                          style: TextStyle(
-                                            decoration: TextDecoration.none,
-                                            fontSize: 15,
-                                          )
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: filteredNewsList.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(10,0,10,0),
+                          child: GestureDetector(
+                            onTap: (){
+                              Navigator.pushNamed(context, '/newsdetails', arguments: {
+                                'image' : newsList[index].newsImage,
+                                'title' : newsList[index].newsTitle,
+                                'details': newsList[index].newsDesc,
+                                'date' : newsList[index].newsDate,
+                              });
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadiusDirectional.circular(3)),
+                              child: Padding(
+                                padding: EdgeInsets.fromLTRB(10, 5, 5, 10),
+                                child: Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      flex: 3,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: <Widget>[
+                                          Text(
+                                              filteredNewsList[index].newsTitle,
+                                              textDirection: TextDirection.rtl,
+                                              style: TextStyle(
+                                                decoration: TextDecoration.none,
+                                                fontSize: 15,
+                                              )
+                                          ),
+
+                                          Row(
+                                            textDirection: TextDirection.rtl,
+                                            children: <Widget>[
+                                              Text(
+                                                  filteredNewsList[index].newsDate,
+                                                  textDirection: TextDirection.rtl,
+                                                  style: TextStyle(
+                                                    decoration: TextDecoration.none,
+                                                    fontSize: 13,
+                                                  )
+                                              ),
+                                              IconButton(
+                                                icon: Icon(Icons.share),
+                                                iconSize: 13,
+                                                onPressed: (){
+                                                  Share.share('check out my website https://example.com');
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                      SizedBox(height: 10,),
-                                      Text(
-                                          filteredNewsList[index].newsDate,
-                                          textDirection: TextDirection.rtl,
-                                          style: TextStyle(
-                                            decoration: TextDecoration.none,
-                                            fontSize: 12,
-                                          )
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  flex: 2,
-                                  child: Card(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadiusDirectional.circular(3)),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: Image.network(
-                                      newsList[index].newsImage,
-                                      fit: BoxFit.fill,
-                                      height: 65,
                                     ),
-                                  ),
+                                    SizedBox(width: 10),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Card(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadiusDirectional.circular(3)),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: Image.network(
+                                          newsList[index].newsImage,
+                                          fit: BoxFit.fill,
+                                          height: 65,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  },
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
           ),
-        ) // This trailing comma makes auto-formatting nicer for build methods.
+          ),
+        // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+
+  void _onRefresh() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use refreshFailed()
+
+  }
+
+  void _onLoading() async{
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
   }
 
 
 
   Future<void> getNews() async {
+
+    refreshKey = GlobalKey<RefreshIndicatorState>();
+
+    newsList = [];
+
     var url =
         'https://raw.githubusercontent.com/vanessaGithub/elnashraflutter/master/elnashranews.json';
     var response = await http.get(url);
